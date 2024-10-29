@@ -1,71 +1,74 @@
-import fs from "fs";
+import fs from "fs/promises";
 import { PDFDocument } from "pdf-lib";
 import pdf from "pdf-parse/lib/pdf-parse.js"
 import path from "path";
 
 const setPdfName = async (filePath) => {
-    if (!fs.existsSync(filePath)) {
-        console.log(`Arquivo não encontrado: ${filePath}`);
-        return;
-    }
-    const dataBuffer = fs.readFileSync(filePath);
+
+    const dataBuffer = await fs.readFile(filePath);
     const data = await pdf(dataBuffer);
 
     const firstLine = data.text.trim().split('\n')[0];
     const cleanFirstLine = firstLine.split(' ').join('');
 
     let paymDate;
-    let reciverName;
+    let receiverName;
     let paymAmount;
+
+    let matchDate;
+    let matchReceiverName;
+    
 
     if(cleanFirstLine === "ComprovantedeTransferência"){
         
-        const matchDate = data.text.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
-        const [day, month, year] = matchDate.split('/');
-        paymDate = [year, month, day].join('-'); 
+        matchDate = data.text.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
 
-        const matchName = data.text.match(/nome do recebedor:\s*([^\n]+)/i)[1];
-        reciverName = matchName.split(' ').join('-');
+        matchReceiverName = data.text.match(/nome do recebedor:\s*([^\n]+)/i)[1];
         
-        paymAmount = data.text.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)[1];
+        const matchPaymAmount = data.text.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)[1];
+        paymAmount = matchPaymAmount;
 
     }else if(cleanFirstLine === "Comprovantedepagamento-DARF"){
         
-        const matchDate = data.text.match(/data do pagamento:\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
-        const [day, month, year] = matchDate.split('/');
-        paymDate = [year, month, day].join('-'); 
+        matchDate = data.text.match(/data do pagamento:\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
         
-        reciverName = "DARF";
+        receiverName = "DARF";
 
         paymAmount = data.text.match(/valor total:\s*R\$\s*([\d.]+,\d{2})/i)[1];
 
     }else if(cleanFirstLine === "Comprovantedepagamentodeboleto"){
         
-        const matchDate = data.text.match(/Data de pagamento:\s*\n?\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
-        const [day, month, year] = matchDate.split('/');
-        paymDate = [year, month, day].join('-'); 
+        matchDate = data.text.match(/Data de pagamento:\s*\n?\s*(\d{2}\/\d{2}\/\d{4})/i)[1];
         
-        const matchName = data.text.match(/Beneficiário:\s*([^C]*)/i)[1];
-        reciverName = matchName.split(' ').join('-');
+        matchReceiverName = data.text.match(/Beneficiário:\s*([A-Za-z0-9\s]+)(?=\s+CPF|CNPJ)/i)[1];
+        receiverName = matchReceiverName.split(' ').join('-');
         
-        paymAmount = data.text.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/)[1];
-        paymAmount = paymAmount.substring(2);
-        console.log("TEXTO", `${paymDate}|${reciverName}|${paymAmount}|Comprovante`);
+        const matchPaymAmount = data.text.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/)[1];
+        paymAmount = matchPaymAmount.substring(2);
 
     }else if(cleanFirstLine === "ComprovantedepagamentoQRCode"){
+        matchDate = data.text.match(/data e hora da expiração:\s*(\d{2}\/\d{2}\/\d{4})\s*às\s*\d{2}:\d{2}:\d{2}/i)[1];  
 
-    }else if(cleanFirstLine === "Banco Itaú - Comprovante de Pagamento de concessionárias"){
+        matchReceiverName = data.text.match(/nome do recebedor:\s*([^\n]*)/i)[1];
+        receiverName = matchReceiverName.split(' ').join('-');
         
+        paymAmount = data.text.match(/valor da transação:\s*([\d.]+,\d{2})/i)[1];
+
     }else{
-        throw new Error('Comprovante não identificado');
+        const pdfName = "Modelo-não-identificado"
+        return pdfName;
     }
 
+    const [day, month, year] = matchDate.split('/');
+    paymDate = [year, month, day].join('-'); 
 
+    if(cleanFirstLine != "Comprovantedepagamento-DARF"){
+        receiverName = matchReceiverName.split(' ').join('-');
+    }
 
+    const pdfName = `${paymDate} ${receiverName} R$${paymAmount} Comprovante`
 
-    const pdfName = `${paymDate}|${reciverName}|${paymAmount}|Comprovante`
-
-    return data.text.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    return pdfName;
 };
 
 const splitPdf = async (req, res) => {
@@ -74,11 +77,11 @@ const splitPdf = async (req, res) => {
             return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
         }
 
-        const existingPdfBytes = fs.readFileSync(req.file.path);
+        const existingPdfBytes = await fs.readFile(req.file.path);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const totalPages = pdfDoc.getPageCount();
         const splitPdfPaths = [];
-        const uploadDir = path.resolve("../uploads"); 
+        const uploadDir = path.resolve("uploads"); 
 
         // Loop para dividir o PDF
         for (let i = 0; i < totalPages; i++) {
@@ -87,15 +90,15 @@ const splitPdf = async (req, res) => {
             newPdfDoc.addPage(copiedPage);
 
             const pdfBytes = await newPdfDoc.save();
-            const outputPath = path.join(uploadDir, `split_page.pdf`);
+            const outputPath = path.join(uploadDir, `split_page_${i}.pdf`);
             
-            fs.writeFileSync(outputPath, pdfBytes);
-            console.log(`Escrevendo PDF em: ${outputPath}`);
-
+            await fs.writeFile(outputPath, pdfBytes); 
+            console.log(`Arquivo criado: ${outputPath}`);
             // Renomeia o arquivo para o nome gerado pelo setPdfName
             const newFileName = await setPdfName(outputPath);
             const newPath = path.join(uploadDir, `${newFileName}.pdf`);
-            fs.renameSync(outputPath, newPath);
+            
+            await fs.rename(outputPath, newPath);
 
             splitPdfPaths.push(newPath);
         }
