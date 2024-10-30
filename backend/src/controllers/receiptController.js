@@ -3,6 +3,9 @@ import { PDFDocument } from "pdf-lib";
 import pdf from "pdf-parse/lib/pdf-parse.js"
 import path from "path";
 
+const uploadDir = path.resolve("uploads"); 
+
+
 const createGenericName = ()=>{
         const timestamp = Date.now(); 
         const randomPart = Math.floor(Math.random() * 100000); 
@@ -32,8 +35,7 @@ const setPdfName = async (filePath) => {
 
         matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)[1];
         
-        const matchPaymAmount = pdfText.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)[1];
-        paymAmount = matchPaymAmount;
+        paymAmount = pdfText.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)[1];
 
     }else if(cleanFirstLine === "Comprovantedepagamento-DARF"){
         
@@ -69,9 +71,11 @@ const setPdfName = async (filePath) => {
         return createGenericName()
     }
 
+    //Formatando a data
     const [day, month, year] = matchDate.split('/');
     paymDate = [year, month, day].join('.'); 
 
+    //Formatando os nomes de beneficiários
     if(cleanFirstLine != "Comprovantedepagamento-DARF"){
         receiverName = matchReceiverName.split(' ').join(' ');
     }
@@ -87,11 +91,14 @@ const splitPdf = async (req, res) => {
             return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
         }
 
+
+        await fs.mkdir(uploadDir, { recursive: true });
+        console.log("Diretório de uploads criado.");
+
         const existingPdfBytes = await fs.readFile(req.file.path);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const totalPages = pdfDoc.getPageCount();
         const splitPdfPaths = [];
-        const uploadDir = path.resolve("uploads"); 
 
         // Loop para dividir o PDF
         for (let i = 0; i < totalPages; i++) {
@@ -115,6 +122,10 @@ const splitPdf = async (req, res) => {
     } catch (error) {
         console.error('Erro ao ler o PDF:', error);
         res.status(500).json({ error: 'Erro ao processar o arquivo PDF.' });
+    } finally {
+        // Limpa o diretório de uploads
+        await fs.rm(uploadDir, { recursive: true, force: true });
+        console.log("Diretório de uploads removido com sucesso.");
     }
 };
 
