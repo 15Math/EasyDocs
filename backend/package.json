@@ -1,10 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
+  "engines":{
+    "node":"14.x"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch --no-warnings ./src/server.js"
+    "dev": "node --watch --no-warnings ./src/server.js",
+    "start":"node ./src/server.js"
   },
   "keywords": [],
   "author": "",

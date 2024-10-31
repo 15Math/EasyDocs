@@ -95,7 +95,6 @@ const splitPdf = async (req, res) => {
 
 
         await fs.mkdir(uploadDir, { recursive: true });
-        console.log("Diretório de uploads criado.");
 
         const existingPdfBytes = await fs.readFile(req.file.path);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -110,7 +109,6 @@ const splitPdf = async (req, res) => {
 
             let pdfBytes = await newPdfDoc.save();
             pdfBytes = Buffer.from(pdfBytes);
-            console.log('Tipo de pdfBytes:', Buffer.isBuffer(pdfBytes));
 
             const outputPath = path.join(uploadDir, `split_page_${i+1}.pdf`);
 
@@ -149,7 +147,6 @@ const splitPdf = async (req, res) => {
         // Limpa o diretório de uploads
         await fs.rm(uploadDir, { recursive: true, force: true });
         await fs.mkdir(uploadDir, { recursive: true });
-        console.log("Diretório de uploads removido com sucesso.");
         
     }
 };
