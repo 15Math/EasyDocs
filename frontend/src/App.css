@@ -1,42 +1,61 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+
+header{
+  background-color: rgb(255, 255, 255);
+  padding: 1rem;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.137);
+  font-weight:800;
+
+  font-size: 20px;
   text-align: center;
 }
+section{
+  text-align: center;
+  margin-top:2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+h1{
+  font-size: 40px;
+}
+input[type="file"]{
+  display: none;
+}
+.description{
+  font-size: 20px;
+  max-width: 60rem;
+}
+.custom-file-upload {
+  display: inline-block;
+  padding: 20px 100px;
+  background-color: #E5322D;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 25px;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.301);
+}
+.custom-file-upload:hover {
+  background-color: #cc231d;
+}
+#dragScreen {
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(6, 4, 26, 0.795);
+  position: fixed; 
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 25px;
+  font-weight: 600;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  z-index: -1; 
+  opacity: 0;
+  
 }
