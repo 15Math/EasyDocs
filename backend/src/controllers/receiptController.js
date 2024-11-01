@@ -5,7 +5,7 @@ import path from "path";
 import archiver from "archiver";
 import { PassThrough } from "stream";
 
-const uploadDir = path.resolve("uploads"); 
+// const uploadDir = path.resolve("uploads"); 
 
 
 const createGenericName = ()=>{
@@ -15,9 +15,8 @@ const createGenericName = ()=>{
         return pdfName;
 }
 
-const setPdfName = async (filePath) => {
-    const dataBuffer = await fs.readFile(filePath);
-    const data = await pdf(dataBuffer);
+const setPdfName = async (pdfBuffer) => {
+    const data = await pdf(pdfBuffer);
     const pdfText = data.text;
     const firstLine = pdfText.trim().split('\n')[0];
     const cleanFirstLine = firstLine.split(' ').join('');
@@ -94,9 +93,10 @@ const splitPdf = async (req, res) => {
         }
 
 
-        await fs.mkdir(uploadDir, { recursive: true });
+        //await fs.mkdir(uploadDir, { recursive: true });
+         //const existingPdfBytes = await fs.readFile(req.file.path);
 
-        const existingPdfBytes = await fs.readFile(req.file.path);
+        const existingPdfBytes = req.file.buffer;
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const totalPages = pdfDoc.getPageCount();
         const splitPdfBuffers = [];
@@ -106,18 +106,10 @@ const splitPdf = async (req, res) => {
             const newPdfDoc = await PDFDocument.create();
             const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
             newPdfDoc.addPage(copiedPage);
-
-            let pdfBytes = await newPdfDoc.save();
-            pdfBytes = Buffer.from(pdfBytes);
-
-            const outputPath = path.join(uploadDir, `split_page_${i+1}.pdf`);
-
-            await fs.writeFile(outputPath, pdfBytes); 
-            console.log(`Arquivo criado: ${outputPath}`);
-
-            const newFileName = await setPdfName(outputPath);
-            splitPdfBuffers.push({ buffer: pdfBytes, fileName: `${newFileName}.pdf` });
-            
+        
+            const pdfBytes = await newPdfDoc.save(); 
+            const newFileName = await setPdfName(pdfBytes); 
+            splitPdfBuffers.push({ buffer: pdfBytes, fileName: `${newFileName}.pdf` }); 
         }
 
         const archive = archiver("zip", { zlib: { level: 9 } });
@@ -143,11 +135,6 @@ const splitPdf = async (req, res) => {
     } catch (error) {
         console.error('Erro ao ler o PDF:', error);
         res.status(500).json({ error: 'Erro ao processar o arquivo PDF.' });
-    } finally {
-        // Limpa o diretório de uploads
-        await fs.rm(uploadDir, { recursive: true, force: true });
-        await fs.mkdir(uploadDir, { recursive: true });
-        
     }
 };
 
