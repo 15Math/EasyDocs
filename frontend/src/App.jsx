@@ -6,8 +6,11 @@ import './App.css'
 
 
 function App() {
+  
   const [pdfSelected, setPdfSelected] = useState(false);
   const [zip, setZip] = useState('')
+
+  const baseURL = "https://receipt-namer-api.vercel.app";
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -48,7 +51,7 @@ function App() {
       const formData = new FormData(); 
       formData.append('pdfFile', pdfFile);
       try {
-        const response = await fetch('http://localhost:3333/splitPdf', {
+        const response = await fetch(baseURL+'/splitPdf', {
           method: 'POST',
           body: formData, // Envia o FormData
         });

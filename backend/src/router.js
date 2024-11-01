@@ -8,6 +8,4 @@ const router = express.Router();
 
 router.post('/splitPdf',upload.single('pdfFile'), receiptController.splitPdf);
 
-
-
 export default router;
