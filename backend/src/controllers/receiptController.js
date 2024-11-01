@@ -1,7 +1,5 @@
-import fs from "fs/promises";
 import { PDFDocument } from "pdf-lib";
 import pdf from "pdf-parse/lib/pdf-parse.js"
-import path from "path";
 import archiver from "archiver";
 import { PassThrough } from "stream";
 
@@ -52,22 +50,20 @@ const setPdfName = async (pdfBuffer) => {
         matchReceiverName = pdfText.match(/Beneficiário:\s*([\w\s]+)(?=\s+CPF\/CNPJ)/i)?.[1];
         
         let matchPaymAmount;
+
         if(!pdfText.includes("Beneficiário Final:")){
             matchPaymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
+
             paymAmount = matchPaymAmount.substring(2);
         }else{
             paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
         }
-        
-        
-
     }else if(cleanFirstLine === "ComprovantedepagamentoQRCode"){
         matchDate = pdfText.match(/data e hora da expiração:\s*(\d{2}\/\d{2}\/\d{4})\s*às\s*\d{2}:\d{2}:\d{2}/i)?.[1];  
 
         matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]*)/i)?.[1];
-        
-        paymAmount = pdfText.match(/valor da transação:\s*([\d.]+,\d{2})/i)?.[1];
 
+        paymAmount = pdfText.match(/valor da transação:\s*([\d.]+,\d{2})/i)?.[1];
     }else{
         return createGenericName()
     }
@@ -82,7 +78,6 @@ const setPdfName = async (pdfBuffer) => {
     }
 
     const pdfName = `${paymDate} - ${receiverName} - ${paymAmount} - Comprovante`
-    console.log(pdfName);
     return pdfName;
 };
 
@@ -92,11 +87,8 @@ const splitPdf = async (req, res) => {
             return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
         }
 
-
-        //await fs.mkdir(uploadDir, { recursive: true });
-         //const existingPdfBytes = await fs.readFile(req.file.path);
-
         const existingPdfBytes = req.file.buffer;
+
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const totalPages = pdfDoc.getPageCount();
         const splitPdfBuffers = [];
@@ -108,8 +100,10 @@ const splitPdf = async (req, res) => {
             newPdfDoc.addPage(copiedPage);
         
             const pdfBytes = await newPdfDoc.save(); 
+
+            const buffer = Buffer.from(pdfBytes);
             const newFileName = await setPdfName(pdfBytes); 
-            splitPdfBuffers.push({ buffer: pdfBytes, fileName: `${newFileName}.pdf` }); 
+            splitPdfBuffers.push({ buffer, fileName: `${newFileName}.pdf` }); 
         }
 
         const archive = archiver("zip", { zlib: { level: 9 } });
@@ -122,6 +116,8 @@ const splitPdf = async (req, res) => {
             passThrough.on("end", () => resolve(Buffer.concat(zipChunks)));
             passThrough.on("error", reject);
 
+
+            
             for (const file of splitPdfBuffers) {
                 archive.append(file.buffer, { name: file.fileName });
             }
