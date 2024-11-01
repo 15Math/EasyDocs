@@ -3,6 +3,7 @@ import pdf from "pdf-parse/lib/pdf-parse.js"
 import archiver from "archiver";
 import { PassThrough } from "stream";
 
+
 // const uploadDir = path.resolve("uploads"); 
 
 
@@ -107,21 +108,21 @@ const splitPdf = async (req, res) => {
         }
 
         const archive = archiver("zip", { zlib: { level: 9 } });
-        const passThrough = new PassThrough();
 
         // Pipa o `archive` para o `PassThrough` e armazena os chunks
         const zipBuffer = await new Promise((resolve, reject) => {
             const zipChunks = [];
+            const passThrough = new PassThrough();
             passThrough.on("data", (chunk) => zipChunks.push(chunk));
             passThrough.on("end", () => resolve(Buffer.concat(zipChunks)));
             passThrough.on("error", reject);
 
 
-            
+            archive.pipe(passThrough);
             for (const file of splitPdfBuffers) {
                 archive.append(file.buffer, { name: file.fileName });
             }
-            archive.pipe(passThrough);
+            
             archive.finalize();
         });
 

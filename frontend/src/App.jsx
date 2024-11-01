@@ -14,6 +14,7 @@ function App() {
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
+    console.log('zip:', zip);
     const base64WithoutPrefix = zip.replace(/^data:application\/zip;base64,/, '');
     const byteCharacters = atob(base64WithoutPrefix);
     
@@ -53,7 +54,7 @@ function App() {
       try {
         const response = await fetch(baseURL+'/splitPdf', {
           method: 'POST',
-          body: formData, // Envia o FormData
+          body: formData,
         });
         
         if (!response.ok) {
@@ -61,6 +62,7 @@ function App() {
         }
   
         const data = await response.json();
+        console.log('Dados recebidos:', data); 
         setZip(data.zipBase64);
 
         console.log('Arquivo enviado com sucesso:', data);
