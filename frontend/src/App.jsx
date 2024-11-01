@@ -8,7 +8,8 @@ import './App.css'
 function App() {
   
   const [pdfSelected, setPdfSelected] = useState(false);
-  const [zip, setZip] = useState('')
+  const [zip, setZip] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const baseURL = "https://receipt-namer-api.vercel.app";
 
@@ -51,6 +52,7 @@ function App() {
       setPdfSelected(true); 
       const formData = new FormData(); 
       formData.append('pdfFile', pdfFile);
+      setLoading(true);
       try {
         const response = await fetch(baseURL+'/splitPdf', {
           method: 'POST',
@@ -68,6 +70,8 @@ function App() {
         console.log('Arquivo enviado com sucesso:', data);
       } catch (error) {
         console.error('Erro ao enviar o arquivo:', error);
+      } finally {
+        setLoading(false); // Desativa o loading após a requisição
       }
     }
   }
@@ -140,18 +144,23 @@ function App() {
        ) : (
 
         <section>
-        <h1>Os comprovantes foram nomeados!</h1>
-        <p>Clique para baixar o zip com os seus PDFs</p>
-        <button 
-          className="custom-file"
-          onClick={handleFileDownload}
-        >
-          <img id="folderImg"src={folderImg} alt=""/>
-          Baixar a comprovantes
-        </button>
+        {loading ? (
+          <div className="loading">Carregando...</div> 
+        ) : (
+          <>
+            <h1>Os comprovantes foram nomeados!</h1>
+            <p>Clique para baixar o zip com os seus PDFs</p>
+            <button 
+              className="custom-file"
+              onClick={handleFileDownload}
+            >
+              <img id="folderImg"src={folderImg} alt=""/>
+              Baixar a comprovantes
+            </button>
+          </>
+        )}
       </section>
       )}
-      
     </>
   )
 }
