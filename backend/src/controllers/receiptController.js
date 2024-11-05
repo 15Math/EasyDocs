@@ -29,8 +29,6 @@ const setPdfName = async (pdfBuffer) => {
     let paymAmount;
 
     let matchDate;
-    let matchReceiverName;
-    let matchPaymAmount;
 
     
     try{
@@ -40,7 +38,7 @@ const setPdfName = async (pdfBuffer) => {
 
                 matchDate = pdfText.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
 
-                matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
+                receiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
                 
                 paymAmount = pdfText.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
@@ -58,12 +56,11 @@ const setPdfName = async (pdfBuffer) => {
 
                 matchDate = pdfText.match(/(\d{2}\/\d{2}\/\d{4})\s*Autenticação\s+mecânica/i)?.[1];
             
-                matchReceiverName = pdfText.match(/Beneficiário:\s*([\w\s]+)(?=\s+CPF\/CNPJ)/i)?.[1];
+                receiverName = pdfText.match(/Beneficiário:\s*([\w\s\-.]+)(?=\s+CPF\/CNPJ)/i)?.[1];
     
                 if(!pdfText.includes("Beneficiário Final:")){
-                    matchPaymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
-    
-                    paymAmount = matchPaymAmount.substring(2);
+                    paymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
+
                 }else{
                     paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
                 }
@@ -71,10 +68,10 @@ const setPdfName = async (pdfBuffer) => {
             break;
             case "ComprovantedepagamentoQRCode":
 
-                matchDate = pdfText.match(/data e hora da expiração:\s*(\d{2}\/\d{2}\/\d{4})\s*às\s*\d{2}:\d{2}:\d{2}/i)?.[1];  
+                matchDate = pdfText.match(/Pagamento efetuado em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
 
-                matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]*)/i)?.[1];
-
+                receiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
+            
                 paymAmount = pdfText.match(/valor da transação:\s*([\d.]+,\d{2})/i)?.[1];
 
             break;
@@ -82,11 +79,11 @@ const setPdfName = async (pdfBuffer) => {
             case "BancoItaú-ComprovantedeTransferência":
 
                 matchDate = pdfText.match(/Transferência efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-
-                matchReceiverName = pdfText.match(/Nome:\s*([^\n]+)/i)?.[1];
+                
+                receiverName = pdfText.match(/Nome:\s*([^\n]+)/i)?.[1];
                 
                 paymAmount = pdfText.match(/Valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
-
+            
             break;
             
             case "BancoItaú-ComprovantedePagamento":
@@ -94,20 +91,39 @@ const setPdfName = async (pdfBuffer) => {
                     case "TEDC–outratitularidade":
                         matchDate = pdfText.match(/TED solicitada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
 
-                        matchReceiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1];
+                        receiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1];
                     
                         paymAmount = pdfText.match(/Valor da TED:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
                     break;
-                    case "TributosEstaduaiscomcódigodebarras":
+                    case "TributosMunicipais":
                         matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                        console.log(pdfText);
+                        paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
-                        receiverName = "TRIBUTOS ESTADUAIS";
+                        receiverName = "TRIBUTOS MUNICIPAIS";
+                       
+                    break;
+                    case "TributosEstaduaiscomcódigodebarras":
+                        
+                        matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
                     
                         paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+
+                        receiverName = "TRIBUTOS ESTADUAIS";
+                        
+
                     break;
                 }
             break;
+            case "BancoItaú-ComprovantedePagamentodeconcessionárias":
 
+                matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                console.log(matchDate)
+                paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+
+                receiverName = "PAGAMENTO DE CONCESSIONÁRIA";
+
+            break;
 
             default:
                 return createGenericName();
@@ -117,11 +133,6 @@ const setPdfName = async (pdfBuffer) => {
         //Formatando a data
         const [day, month, year] = matchDate.split('/');
         paymDate = [year, month, day].join('.'); 
-
-        //Formatando os nomes de beneficiários
-        if(matchReceiverName != null){
-            receiverName = matchReceiverName.split(' ').join(' ').trim();
-        }
 
         const pdfName = `${paymDate} - ${paymAmount} - ${receiverName} - Comprovante`
         return pdfName;
@@ -172,6 +183,12 @@ const splitPdf = async (req, res) => {
         const zipBuffer = await zipBufferPromise;
 
         const zipBase64 = zipBuffer.toString("base64");
+
+        res.set({
+            'Content-Type': 'application/zip',
+            'Content-Disposition': 'attachment; filename="arquivos.zip"',
+        });
+
         res.json({ zipBase64 });
 
     } catch (error) {
