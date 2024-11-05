@@ -17,8 +17,12 @@ const createGenericName = ()=>{
 const setPdfName = async (pdfBuffer) => {
     const data = await pdf(pdfBuffer);
     const pdfText = data.text;
+
     const firstLine = pdfText.trim().split('\n')[0];
     const cleanFirstLine = firstLine.split(' ').join('');
+    const secondLine = pdfText.trim().split('\n')[1];
+    const cleanSecondLine = secondLine.split(' ').join('');
+
 
     let paymDate;
     let receiverName;
@@ -26,60 +30,105 @@ const setPdfName = async (pdfBuffer) => {
 
     let matchDate;
     let matchReceiverName;
+    let matchPaymAmount;
+
     
+    try{
 
-    if(cleanFirstLine === "ComprovantedeTransferência"){
-        
-        matchDate = pdfText.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+        switch (cleanFirstLine) {
+            case "ComprovantedeTransferência":
 
-        matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
-        
-        paymAmount = pdfText.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+                matchDate = pdfText.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
 
-    }else if(cleanFirstLine === "Comprovantedepagamento-DARF"){
-        
-        matchDate = pdfText.match(/data do pagamento:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-        
-        receiverName = "DARF";
+                matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
+                
+                paymAmount = pdfText.match(/valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
-        paymAmount = pdfText.match(/valor total:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+            break;
+            case "Comprovantedepagamento-DARF":
 
-    }else if(cleanFirstLine === "Comprovantedepagamentodeboleto"){
-        
-        matchDate = pdfText.match(/(\d{2}\/\d{2}\/\d{4})\s*Autenticação\s+mecânica/i)?.[1];
-        
-        matchReceiverName = pdfText.match(/Beneficiário:\s*([\w\s]+)(?=\s+CPF\/CNPJ)/i)?.[1];
-        
-        let matchPaymAmount;
+                matchDate = pdfText.match(/data do pagamento:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+            
+                receiverName = "DARF";
+    
+                paymAmount = pdfText.match(/valor total:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];    
 
-        if(!pdfText.includes("Beneficiário Final:")){
-            matchPaymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
+            break;
+            case "Comprovantedepagamentodeboleto":
 
-            paymAmount = matchPaymAmount.substring(2);
-        }else{
-            paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
+                matchDate = pdfText.match(/(\d{2}\/\d{2}\/\d{4})\s*Autenticação\s+mecânica/i)?.[1];
+            
+                matchReceiverName = pdfText.match(/Beneficiário:\s*([\w\s]+)(?=\s+CPF\/CNPJ)/i)?.[1];
+    
+                if(!pdfText.includes("Beneficiário Final:")){
+                    matchPaymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
+    
+                    paymAmount = matchPaymAmount.substring(2);
+                }else{
+                    paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
+                }
+    
+            break;
+            case "ComprovantedepagamentoQRCode":
+
+                matchDate = pdfText.match(/data e hora da expiração:\s*(\d{2}\/\d{2}\/\d{4})\s*às\s*\d{2}:\d{2}:\d{2}/i)?.[1];  
+
+                matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]*)/i)?.[1];
+
+                paymAmount = pdfText.match(/valor da transação:\s*([\d.]+,\d{2})/i)?.[1];
+
+            break;
+            //Comprovante de Transferência de conta corrente para conta corrente
+            case "BancoItaú-ComprovantedeTransferência":
+
+                matchDate = pdfText.match(/Transferência efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+
+                matchReceiverName = pdfText.match(/Nome:\s*([^\n]+)/i)?.[1];
+                
+                paymAmount = pdfText.match(/Valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+
+            break;
+            
+            case "BancoItaú-ComprovantedePagamento":
+                switch(cleanSecondLine){
+                    case "TEDC–outratitularidade":
+                        matchDate = pdfText.match(/TED solicitada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+
+                        matchReceiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1];
+                    
+                        paymAmount = pdfText.match(/Valor da TED:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+                    break;
+                    case "TributosEstaduaiscomcódigodebarras":
+                        matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+
+                        receiverName = "TRIBUTOS ESTADUAIS";
+                    
+                        paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+                    break;
+                }
+            break;
+
+
+            default:
+                return createGenericName();
+        }   
+
+       
+        //Formatando a data
+        const [day, month, year] = matchDate.split('/');
+        paymDate = [year, month, day].join('.'); 
+
+        //Formatando os nomes de beneficiários
+        if(matchReceiverName != null){
+            receiverName = matchReceiverName.split(' ').join(' ').trim();
         }
-    }else if(cleanFirstLine === "ComprovantedepagamentoQRCode"){
-        matchDate = pdfText.match(/data e hora da expiração:\s*(\d{2}\/\d{2}\/\d{4})\s*às\s*\d{2}:\d{2}:\d{2}/i)?.[1];  
 
-        matchReceiverName = pdfText.match(/nome do recebedor:\s*([^\n]*)/i)?.[1];
-
-        paymAmount = pdfText.match(/valor da transação:\s*([\d.]+,\d{2})/i)?.[1];
-    }else{
-        return createGenericName()
+        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName} - Comprovante`
+        return pdfName;
+    }catch (erro) {
+        console.log("ERRO: erro ao nomear PDF", erro);
+        return createGenericName();
     }
-
-    //Formatando a data
-    const [day, month, year] = matchDate.split('/');
-    paymDate = [year, month, day].join('.'); 
-
-    //Formatando os nomes de beneficiários
-    if(cleanFirstLine != "Comprovantedepagamento-DARF"){
-        receiverName = matchReceiverName.split(' ').join(' ');
-    }
-
-    const pdfName = `${paymDate} - ${receiverName} - ${paymAmount} - Comprovante`
-    return pdfName;
 };
 
 const splitPdf = async (req, res) => {
