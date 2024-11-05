@@ -92,7 +92,19 @@ const splitPdf = async (req, res) => {
 
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const totalPages = pdfDoc.getPageCount();
-        const splitPdfBuffers = [];
+
+        const archive = archiver("zip", { zlib: { level: 9 } });
+        const passThrough = new PassThrough();
+
+        archive.pipe(passThrough);
+
+         // Cria uma promessa para o Buffer do arquivo zip
+         const zipBufferPromise = new Promise((resolve, reject) => {
+            const zipChunks = [];
+            passThrough.on("data", (chunk) => zipChunks.push(chunk));
+            passThrough.on("end", () => resolve(Buffer.concat(zipChunks)));
+            passThrough.on("error", reject);
+        });
 
         // Loop para dividir o PDF
         for (let i = 0; i < totalPages; i++) {
@@ -101,30 +113,14 @@ const splitPdf = async (req, res) => {
             newPdfDoc.addPage(copiedPage);
         
             const pdfBytes = await newPdfDoc.save(); 
-
             const buffer = Buffer.from(pdfBytes);
             const newFileName = await setPdfName(pdfBytes); 
-            splitPdfBuffers.push({ buffer, fileName: `${newFileName}.pdf` }); 
+            
+            archive.append(buffer, { name: `${newFileName}.pdf` });
         }
 
-        const archive = archiver("zip", { zlib: { level: 9 } });
-
-        // Pipa o `archive` para o `PassThrough` e armazena os chunks
-        const zipBuffer = await new Promise((resolve, reject) => {
-            const zipChunks = [];
-            const passThrough = new PassThrough();
-            passThrough.on("data", (chunk) => zipChunks.push(chunk));
-            passThrough.on("end", () => resolve(Buffer.concat(zipChunks)));
-            passThrough.on("error", reject);
-
-
-            archive.pipe(passThrough);
-            for (const file of splitPdfBuffers) {
-                archive.append(file.buffer, { name: file.fileName });
-            }
-            
-            archive.finalize();
-        });
+        await archive.finalize();
+        const zipBuffer = await zipBufferPromise;
 
         const zipBase64 = zipBuffer.toString("base64");
         res.json({ zipBase64 });
