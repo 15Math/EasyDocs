@@ -68,7 +68,8 @@ const setPdfName = async (pdfBuffer) => {
             break;
             case "ComprovantedepagamentoQRCode":
 
-                matchDate = pdfText.match(/Pagamento efetuado em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                matchDate = pdfText.match(/Pagamento efetuado em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1] 
+                || pdfText.match(/Pagamentoefetuadoem\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
 
                 receiverName = pdfText.match(/nome do recebedor:\s*([^\n]+)/i)?.[1];
             
@@ -96,7 +97,8 @@ const setPdfName = async (pdfBuffer) => {
                         paymAmount = pdfText.match(/Valor da TED:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
                     break;
                     case "TributosMunicipais":
-                        matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                        matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1]
+                        || pdfText.match(/Operaçãoefetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
         
                         paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
@@ -117,7 +119,8 @@ const setPdfName = async (pdfBuffer) => {
             break;
             case "BancoItaú-ComprovantedePagamentodeconcessionárias":
 
-                matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1]
+                            || pdfText.match(/Operaçãoefetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
     
                 paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
