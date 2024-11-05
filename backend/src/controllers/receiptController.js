@@ -97,7 +97,7 @@ const setPdfName = async (pdfBuffer) => {
                     break;
                     case "TributosMunicipais":
                         matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-                        console.log(pdfText);
+        
                         paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
                         receiverName = "TRIBUTOS MUNICIPAIS";
@@ -118,7 +118,7 @@ const setPdfName = async (pdfBuffer) => {
             case "BancoItaú-ComprovantedePagamentodeconcessionárias":
 
                 matchDate = pdfText.match(/Operação efetuada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-                console.log(matchDate)
+    
                 paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
                 receiverName = "PAGAMENTO DE CONCESSIONÁRIA";
