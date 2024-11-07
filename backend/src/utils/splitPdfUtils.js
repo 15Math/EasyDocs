@@ -1,20 +1,14 @@
-import { PDFDocument } from "pdf-lib";
 import pdf from "pdf-parse/lib/pdf-parse.js"
-import archiver from "archiver";
-import { PassThrough } from "stream";
-
-
-// const uploadDir = path.resolve("uploads"); 
-
 
 const createGenericName = ()=>{
-        const timestamp = Date.now(); 
-        const randomPart = Math.floor(Math.random() * 100000); 
-        const pdfName = timestamp + randomPart+" Comprovante"
-        return pdfName;
+    const timestamp = Date.now(); 
+    const randomPart = Math.floor(Math.random() * 100000); 
+    const pdfName = timestamp + randomPart+" Comprovante"
+    return pdfName;
 }
 
-const setPdfName = async (pdfBuffer) => {
+
+const setReceiptName = async (pdfBuffer) => {
     const data = await pdf(pdfBuffer);
     const pdfText = data.text;
 
@@ -34,6 +28,17 @@ const setPdfName = async (pdfBuffer) => {
     try{
 
         switch (cleanFirstLine) {
+            case "PREFEITURADACIDADEDORIODEJANEIRO":
+                
+                paymAmount = pdfText.match(/VALOR DA NOTA= \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+                
+
+                receiverName = pdfText.match(/Nome\/Razão Social\s*([^\n\S][^\n]*)/i)?.[1];
+               
+                
+                matchDate = pdfText.match(/Data e Hora de Emissão\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+
+            break;
             case "ComprovantedeTransferência":
 
                 matchDate = pdfText.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
@@ -127,7 +132,6 @@ const setPdfName = async (pdfBuffer) => {
                 receiverName = "PAGAMENTO DE CONCESSIONÁRIA";
 
             break;
-
             default:
                 return createGenericName();
         }   
@@ -136,8 +140,7 @@ const setPdfName = async (pdfBuffer) => {
         //Formatando a data
         const [day, month, year] = matchDate.split('/');
         paymDate = [year, month, day].join('.'); 
-
-        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName} - Comprovante`
+        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()}`
         return pdfName;
     }catch (erro) {
         console.log("ERRO: erro ao nomear PDF", erro);
@@ -145,61 +148,13 @@ const setPdfName = async (pdfBuffer) => {
     }
 };
 
-const splitPdf = async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
-        }
 
-        const existingPdfBytes = req.file.buffer;
 
-        const pdfDoc = await PDFDocument.load(existingPdfBytes);
-        const totalPages = pdfDoc.getPageCount();
+const setInvoiceName = async  ()=>{
 
-        const archive = archiver("zip", { zlib: { level: 9 } });
-        const passThrough = new PassThrough();
-
-        archive.pipe(passThrough);
-
-         // Cria uma promessa para o Buffer do arquivo zip
-         const zipBufferPromise = new Promise((resolve, reject) => {
-            const zipChunks = [];
-            passThrough.on("data", (chunk) => zipChunks.push(chunk));
-            passThrough.on("end", () => resolve(Buffer.concat(zipChunks)));
-            passThrough.on("error", reject);
-        });
-
-        // Loop para dividir o PDF
-        for (let i = 0; i < totalPages; i++) {
-            const newPdfDoc = await PDFDocument.create();
-            const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
-            newPdfDoc.addPage(copiedPage);
-        
-            const pdfBytes = await newPdfDoc.save(); 
-            const buffer = Buffer.from(pdfBytes);
-            const newFileName = await setPdfName(pdfBytes); 
-            
-            archive.append(buffer, { name: `${newFileName}.pdf` });
-        }
-
-        await archive.finalize();
-        const zipBuffer = await zipBufferPromise;
-
-        const zipBase64 = zipBuffer.toString("base64");
-
-        res.set({
-            'Content-Type': 'application/zip',
-            'Content-Disposition': 'attachment; filename="arquivos.zip"',
-        });
-
-        res.json({ zipBase64 });
-
-    } catch (error) {
-        console.error('Erro ao ler o PDF:', error);
-        res.status(500).json({ error: 'Erro ao processar o arquivo PDF.' });
-    }
-};
+}
 
 export default {
-    splitPdf
-};
+    setReceiptName,
+    setInvoiceName
+}
