@@ -18,10 +18,10 @@ export function InvoiceNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const baseURL = "https://receipt-namer-api.vercel.app";
+  const baseURL = "https://easy-docs-api.vercel.app";
 
   //URL para desenvolvimento
-  const baseURL = "http://localhost:3000"
+  //const baseURL = "http://localhost:3000"
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -64,7 +64,7 @@ export function InvoiceNamer() {
       formData.append('pdfFile', pdfFile);
       setLoading(true);
       try {
-        const response = await fetch(baseURL+'/splitPdf', {
+        const response = await fetch(baseURL+'/splitInvoicePdf', {
           method: 'POST',
           body: formData,
         });
