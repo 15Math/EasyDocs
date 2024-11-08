@@ -42,10 +42,10 @@ const splitReceiptPdf = async (req, res) => {
             let newFileName;
          
             newFileName = await setReceiptName(pdfBytes); 
-            const endpoint = req.endpoint
+            const endpoint = req.path
 
-            if(endpoint == "/splitReceiptPdf"){
-                newFileName += " Comprovante"
+            if(endpoint === "/splitReceiptPdf"){
+                newFileName += " - Comprovante"
             }else{
                 newFileName += " - Nota Fiscal"
             }
