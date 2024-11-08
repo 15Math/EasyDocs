@@ -132,7 +132,7 @@ export function InvoiceNamer() {
         <h1>Nomear Notas fiscais</h1>
         <p className='description'>Divida seu arquivo PDF de notas fiscais em uma pasta zip com arquivos individuais nomeados com suas informações.</p>
         <UploadBtn handleFileChange={handleFileChange} backgroundColor='#2d3fe5'></UploadBtn>
-        <p>Modelos nomeados: . . . . . . . . . . . . . . . . </p>
+        <p>Modelo válido: Nota Fiscal Prefeitura da cidade do Rio de Janeiro </p>
       </section>
 
        ) : (
