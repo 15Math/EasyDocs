@@ -5,6 +5,8 @@ const app = express();
 
 
 app.use(express.json())
-app.use(cors());
+app.use(cors({
+    origin: 'https://easydocs15.netlify.app'
+}));
 app.use(router);
 export default app;
