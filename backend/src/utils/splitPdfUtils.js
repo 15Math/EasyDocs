@@ -137,7 +137,7 @@ const setReceiptName = async (pdfBuffer) => {
                 
                 paymAmount = pdfText.match(/Valor pago:\s*R\$\s*([\d.]+,\d{2})/i)?.[1] || pdfText.match(/Valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
                 
-                receiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1] || (cleanSecondLine.includes("TributosMunicipais")?"Tributos Municipais":pdfText.match(/-\s*([^\n]+)/gi)?.[1].replace(/^-/, ''));
+                receiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1] || pdfText.match(/Nome:\s*([^\n]+)/i)?.[1] || (cleanSecondLine.includes("TributosMunicipais")?"Tributos Municipais":pdfText.match(/-\s*([^\n]+)/gi)?.[1].replace(/^-/, ''));
                 
             
                 
