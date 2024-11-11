@@ -6,7 +6,7 @@ import splitPdfUtils from "../utils/splitPdfUtils.js";
 
 const {setReceiptName, setInvoiceName } = splitPdfUtils;
 
-const splitReceiptPdf = async (req, res) => {
+const splitPdf = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
@@ -76,6 +76,6 @@ const splitInvoicePdf = ()=>{
 }
 
 export default {
-    splitReceiptPdf,
+    splitPdf,
     splitInvoicePdf
 };
