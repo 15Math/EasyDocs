@@ -4,7 +4,7 @@ import { PassThrough } from "stream";
 
 import splitPdfUtils from "../utils/splitPdfUtils.js";
 
-const {setReceiptName, setInvoiceName } = splitPdfUtils;
+const {setReceiptName, setInvoiceName, getPdfWithText  } = splitPdfUtils;
 
 const splitPdf = async (req, res) => {
     try {
@@ -40,7 +40,8 @@ const splitPdf = async (req, res) => {
             const buffer = Buffer.from(pdfBytes);
 
             let newFileName;
-         
+            
+            getPdfWithText(pdfBytes);
             newFileName = await setReceiptName(pdfBytes); 
             const endpoint = req.endpoint
 

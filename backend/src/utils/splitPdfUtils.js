@@ -1,5 +1,26 @@
 import pdf from "pdf-parse/lib/pdf-parse.js"
 
+import {fromBuffer} from "pdf2pic"
+const getPdfWithText = (pdfBuffer) =>{
+
+    const options = {
+        density: 100,
+        saveFilename: "pdfImage",
+        format: "png",
+        width: 600,
+        height: 600
+    }
+    const convert = fromBuffer(pdfBuffer, options);
+
+    convert(1,{responseType:"image"})
+    .then((resolve) => {
+        console.log("Page is now converted as image");
+    
+        return resolve;
+      });
+}
+
+
 const createGenericName = ()=>{
     const timestamp = Date.now(); 
     const randomPart = Math.floor(Math.random() * 100000); 
@@ -156,5 +177,6 @@ const setInvoiceName = async  ()=>{
 
 export default {
     setReceiptName,
-    setInvoiceName
+    setInvoiceName,
+    getPdfWithText
 }
