@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import folderImg from '../../assets/folder.png'
+
+import baseURL from '../../utils/baseUrl.js';
 
 import goBackArrow from "../../assets/arrow.png" 
 
@@ -16,10 +17,6 @@ export function ReceiptNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const baseURL = "https://receipt-namer-api.vercel.app";
-
-  //URL para desenvolvimento
-  const baseURL = "http://localhost:3000"
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -62,7 +59,8 @@ export function ReceiptNamer() {
       formData.append('pdfFile', pdfFile);
       setLoading(true);
       try {
-        const response = await fetch(baseURL+'/splitPdf', {
+        const response = await fetch(baseURL+'/splitReceiptPdf', {
+        const response = await fetch(baseURL+'/splitReceiptPdf', {
           method: 'POST',
           body: formData,
         });
@@ -130,7 +128,7 @@ export function ReceiptNamer() {
         <h1>Nomear comprovantes</h1>
         <p className='description'>Divida seu arquivo PDF de comprovantes em uma pasta zip com arquivos individuais nomeados com suas informações.</p>
         <UploadBtn handleFileChange={handleFileChange} backgroundColor='#e52d2d'></UploadBtn>
-        <p className='modelTypes'>Modelos nomeados: Itaú Transferência, Itaú DARF; Itaú Boleto; Itaú QR Code; Itaú Transferência conta corrente para conta corrente; Itaú Comprovante de Pagamento; Itaú Tributos Estaduais com código de barras; Itaú Comprovante de Pagamento de concessionárias
+        <p className='modelTypes'>Modelos aceitos: Itaú Transferência, Itaú DARF; Itaú Boleto; Itaú QR Code; Itaú Transferência conta corrente para conta corrente; Itaú Comprovante de Pagamento; Itaú Tributos Estaduais com código de barras; Itaú Comprovante de Pagamento de concessionárias
         </p>
       </section>
 

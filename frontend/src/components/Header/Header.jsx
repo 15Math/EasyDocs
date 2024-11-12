@@ -7,8 +7,8 @@ export default function Header(){
 
         <header>
                 
-                <Link to="/" className='header-link nav receipt'>Comprovantes</Link>
-                <Link to="/landingPage" className='header-link header-title'>EasyDocs</Link>
+                <Link to="/receiptNamer" className='header-link nav receipt'>Comprovantes</Link>
+                <Link to="/" className='header-link header-title'>EasyDocs</Link>
                 <Link to="/invoiceNamer" className='header-link nav invoice'>Nota Fiscal</Link>
 
         </header>
