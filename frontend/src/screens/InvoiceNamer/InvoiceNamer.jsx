@@ -18,10 +18,10 @@ export function InvoiceNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const baseURL = "https://receipt-namer-api.vercel.app";
+  const baseURL = "https://easy-docs-api.vercel.app";
 
   //URL para desenvolvimento
-  const baseURL = "http://localhost:3000"
+  //const baseURL = "http://localhost:3000"
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -64,7 +64,7 @@ export function InvoiceNamer() {
       formData.append('pdfFile', pdfFile);
       setLoading(true);
       try {
-        const response = await fetch(baseURL+'/splitPdf', {
+        const response = await fetch(baseURL+'/splitInvoicePdf', {
           method: 'POST',
           body: formData,
         });
@@ -132,7 +132,11 @@ export function InvoiceNamer() {
         <h1>Nomear Notas fiscais</h1>
         <p className='description'>Divida seu arquivo PDF de notas fiscais em uma pasta zip com arquivos individuais nomeados com suas informações.</p>
         <UploadBtn handleFileChange={handleFileChange} backgroundColor='#2d3fe5'></UploadBtn>
-        <p>Modelos nomeados: . . . . . . . . . . . . . . . . </p>
+<<<<<<< HEAD
+        <p>Modelo aceito: Nota Fiscal Perfeitura da Cidade do Rio de Janeiro </p>
+=======
+        <p>Modelo válido: Nota Fiscal Prefeitura da cidade do Rio de Janeiro </p>
+>>>>>>> 8c82b907aa1defba4c689e264bfd81329188a830
       </section>
 
        ) : (
