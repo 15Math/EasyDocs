@@ -4,7 +4,7 @@ import { PassThrough } from "stream";
 
 import splitPdfUtils from "../utils/splitPdfUtils.js";
 
-const {setReceiptName, setInvoiceName } = splitPdfUtils;
+const {setReceiptName } = splitPdfUtils;
 
 const splitReceiptPdf = async (req, res) => {
     try {
@@ -42,10 +42,10 @@ const splitReceiptPdf = async (req, res) => {
             let newFileName;
          
             newFileName = await setReceiptName(pdfBytes); 
-            const endpoint = req.endpoint
+            const endpoint = req.originalUrl
 
-            if(endpoint == "/splitReceiptPdf"){
-                newFileName += " Comprovante"
+            if(endpoint === "/splitReceiptPdf"){
+                newFileName += " - Comprovante"
             }else{
                 newFileName += " - Nota Fiscal"
             }
@@ -71,11 +71,8 @@ const splitReceiptPdf = async (req, res) => {
     }
 };
 
-const splitInvoicePdf = ()=>{
 
-}
 
 export default {
-    splitReceiptPdf,
-    splitInvoicePdf
+    splitReceiptPdf
 };

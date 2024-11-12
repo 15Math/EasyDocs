@@ -2,7 +2,7 @@ import express from "express";
 import splitPdfController from "./controllers/splitPdfController.js";
 import multer from "multer"
 
-const { splitReceiptPdf, splitInvoicePdf } = splitPdfController;
+const { splitReceiptPdf} = splitPdfController;
 
 //Salvando em memória para fazer deploy no vercel
 const storage = multer.memoryStorage();

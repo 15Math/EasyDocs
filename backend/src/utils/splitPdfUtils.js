@@ -11,7 +11,6 @@ const createGenericName = ()=>{
 const setReceiptName = async (pdfBuffer) => {
     const data = await pdf(pdfBuffer);
     const pdfText = data.text;
-
     const firstLine = pdfText.trim().split('\n')[0];
     const cleanFirstLine = firstLine.split(' ').join('');
     const secondLine = pdfText.trim().split('\n')[1];
@@ -149,12 +148,6 @@ const setReceiptName = async (pdfBuffer) => {
 };
 
 
-
-const setInvoiceName = async  ()=>{
-
-}
-
 export default {
     setReceiptName,
-    setInvoiceName
 }
