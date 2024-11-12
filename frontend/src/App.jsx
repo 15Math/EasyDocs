@@ -15,8 +15,8 @@ function App() {
   return (
     <Router>
       <Routes>
-          <Route path="/" element={<ReceiptNamer />} />
-          <Route path="/landingPage" element={<LandingPage  />} />
+          <Route path="/receiptNamer" element={<ReceiptNamer />} />
+          <Route path="/" element={<LandingPage  />} />
           <Route path="/invoiceNamer" element={<InvoiceNamer />} />
         </Routes>
     </Router>
