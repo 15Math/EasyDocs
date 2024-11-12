@@ -11,11 +11,12 @@ const createGenericName = ()=>{
 const setReceiptName = async (pdfBuffer) => {
     const data = await pdf(pdfBuffer);
     const pdfText = data.text;
+    //console.log(pdfText);
+
     const firstLine = pdfText.trim().split('\n')[0];
     const cleanFirstLine = firstLine.split(' ').join('');
     const secondLine = pdfText.trim().split('\n')[1];
     const cleanSecondLine = secondLine.split(' ').join('');
-
 
     let paymDate;
     let receiverName;
@@ -116,7 +117,6 @@ const setReceiptName = async (pdfBuffer) => {
                         paymAmount = pdfText.match(/Valor do documento:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
 
                         receiverName = "TRIBUTOS ESTADUAIS";
-                        
 
                     break;
                 }
@@ -131,13 +131,25 @@ const setReceiptName = async (pdfBuffer) => {
                 receiverName = "PAGAMENTO DE CONCESSIONÁRIA";
 
             break;
+            case "ComprovantedeOperação-":
+
+                matchDate = pdfText.match(/Pagamento efetuado em \s*(\d{2}\.\d{2}\.\d{4})/i)?.[1] || pdfText.match(/Transferência realizada em \s*(\d{2}\.\d{2}\.\d{4})/i)?.[1]
+                
+                paymAmount = pdfText.match(/Valor pago:\s*R\$\s*([\d.]+,\d{2})/i)?.[1] || pdfText.match(/Valor:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+                
+                receiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1] || pdfText.match(/Nome:\s*([^\n]+)/i)?.[1] || (cleanSecondLine.includes("TributosMunicipais")?"Tributos Municipais":pdfText.match(/-\s*([^\n]+)/gi)?.[1].replace(/^-/, ''));
+                
+            
+                
+
+            break;
             default:
                 return createGenericName();
         }   
 
        
         //Formatando a data
-        const [day, month, year] = matchDate.split('/');
+        const [day, month, year] = matchDate.includes('/') ? matchDate.split('/') : matchDate.split('.');
         paymDate = [year, month, day].join('.'); 
         const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()}`
         return pdfName;

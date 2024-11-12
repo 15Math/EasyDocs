@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import folderImg from '../../assets/folder.png'
+
+import baseURL from '../../utils/baseUrl.js';
 
 import goBackArrow from "../../assets/arrow.png" 
 
@@ -16,10 +17,6 @@ export function ReceiptNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const baseURL = "https://receipt-namer-api.vercel.app";
-
-  //URL para desenvolvimento
-  const baseURL = "http://localhost:3000"
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -62,6 +59,7 @@ export function ReceiptNamer() {
       formData.append('pdfFile', pdfFile);
       setLoading(true);
       try {
+        const response = await fetch(baseURL+'/splitReceiptPdf', {
         const response = await fetch(baseURL+'/splitReceiptPdf', {
           method: 'POST',
           body: formData,
