@@ -9,7 +9,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const router = express.Router();
-console.log("aaaaaaa")
 router.post('/splitReceiptPdf',upload.single('pdfFile'), splitPdf);
 router.post('/splitInvoicePdf',upload.single('pdfFile'), splitPdf);
 
