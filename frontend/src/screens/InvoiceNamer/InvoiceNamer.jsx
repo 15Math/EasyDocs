@@ -8,7 +8,7 @@ import '../../App.css'
 import Header from '../../components/Header/Header';
 import DownloadBtn from '../../components/DowloadBtn/DownloadBtn';
 import UploadBtn from '../../components/UploadBtn/UploadBtn';
-
+import baseURL from '../../utils/baseURL';
 
 
 
@@ -18,7 +18,6 @@ export function InvoiceNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const baseURL = "https://easy-docs-api.vercel.app";
 
   //URL para desenvolvimento
   //const baseURL = "http://localhost:3000"
