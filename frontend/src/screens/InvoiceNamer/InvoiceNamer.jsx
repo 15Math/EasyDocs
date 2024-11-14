@@ -55,35 +55,37 @@ export function InvoiceNamer() {
 }
 
 
-  const handleFileChange = async(event)=>{
-    const pdfFile = event.target.files[0];
-    if (pdfFile) {
-      setPdfSelected(true); 
-      const formData = new FormData(); 
-      formData.append('pdfFile', pdfFile);
-      setLoading(true);
-      try {
-        const response = await fetch(baseURL+'/splitInvoicePdf', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error('Erro ao enviar o arquivo');
-        }
-  
-        const data = await response.json();
-        console.log('Dados recebidos:', data); 
-        setZip(data.zipBase64);
+const handleFileChange = async (event) => {
+  const pdfFile = event.target.files[0];
+  if (pdfFile) {
+    setPdfSelected(true);
+    const formData = new FormData();
+    formData.append('pdfFile', pdfFile);
+    setLoading(true);
+    try {
+      const response = await fetch(baseURL + '/splitInvoicePdf', {
+        method: 'POST',
+        body: formData,
+      });
 
-        console.log('Arquivo enviado com sucesso:', data);
-      } catch (error) {
-        console.error('Erro ao enviar o arquivo:', error);
-      } finally {
-        setLoading(false); // Desativa o loading após a requisição
+      if (!response.ok) {
+        throw new Error('Erro ao enviar o arquivo');
       }
+
+      const data = await response.json();
+      if (data.zipBase64) {
+        setZip(data.zipBase64);
+        console.log('Arquivo enviado com sucesso:', data);
+      } else {
+        throw new Error('Erro ao processar o arquivo');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar o arquivo:', error);
+    } finally {
+      setLoading(false);
     }
   }
+};
 
   const handleDrop = (event) => {
     event.preventDefault(); 
