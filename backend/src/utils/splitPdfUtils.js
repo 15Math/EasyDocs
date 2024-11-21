@@ -83,7 +83,7 @@ const setReceiptName = async (pdfBuffer) => {
     
                 if(!pdfText.includes("Beneficiário Final:")){
                     paymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
-
+                    paymAmount = paymAmount.replace(/^(\d{2})/, '').trim();
                 }else{
                     paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
                 }
