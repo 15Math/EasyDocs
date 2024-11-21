@@ -112,8 +112,9 @@ const setReceiptName = async (pdfBuffer) => {
             case "BancoItaú-ComprovantedePagamento":
                 switch(cleanSecondLine){
                     case "TEDC–outratitularidade":
-                        matchDate = pdfText.match(/TED solicitada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-
+                       
+                        matchDate = pdfText.match(/TEDsolicitada em\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+                        
                         receiverName = pdfText.match(/Nome do favorecido:\s*([^\n]+)/i)?.[1];
                     
                         paymAmount = pdfText.match(/Valor da TED:\s*R\$\s*([\d.]+,\d{2})/i)?.[1];
