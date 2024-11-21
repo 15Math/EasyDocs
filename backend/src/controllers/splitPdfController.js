@@ -4,10 +4,9 @@ import { PassThrough } from "stream";
 
 import splitPdfUtils from "../utils/splitPdfUtils.js";
 
-const {setReceiptName, setInvoiceName, getPdfWithText  } = splitPdfUtils;
+const {setReceiptName, setInvoiceName, getPdfText  } = splitPdfUtils;
 
 const splitPdf = async (req, res) => {
-    
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Por favor, envie um arquivo PDF.' });
@@ -38,23 +37,18 @@ const splitPdf = async (req, res) => {
             newPdfDoc.addPage(copiedPage);
             
         
-            const pdfBytes = await newPdfDoc.save(); 
+            let pdfBytes = await newPdfDoc.save(); 
             const buffer = Buffer.from(pdfBytes);
 
             const endpoint = req.path
             let newFileName;
-
-            if(endpoint == "/splitInvoicePdf"){
-                getPdfWithText(pdfBytes);
-            }
             
-            newFileName = await setReceiptName(pdfBytes); 
-            
-      
             if(endpoint == "/splitReceiptPdf"){
-                newFileName += " Comprovante"
-            }else{
-                newFileName += " - Nota Fiscal"
+                newFileName = await setReceiptName(pdfBytes); 
+            }else if(endpoint == "/splitInvoicePdf"){
+                //Transformar em pdf com arquivo de texto
+                const text = await getPdfText(buffer);
+                newFileName = await setInvoiceName(text); 
             }
 
             archive.append(buffer, { name: `${newFileName}.pdf` });

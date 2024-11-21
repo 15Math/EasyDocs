@@ -8,7 +8,7 @@ import '../../App.css'
 import Header from '../../components/Header/Header';
 import DownloadBtn from '../../components/DowloadBtn/DownloadBtn';
 import UploadBtn from '../../components/UploadBtn/UploadBtn';
-
+import baseURL from '../../utils/baseURL';
 
 
 
@@ -18,10 +18,9 @@ export function InvoiceNamer() {
   const [zip, setZip] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const baseURL = "https://receipt-namer-api.vercel.app";
 
   //URL para desenvolvimento
-  const baseURL = "http://localhost:3000"
+  //const baseURL = "http://localhost:3000"
 
   const handleFileDownload = ()=> {
     // Remove o prefixo "data:application/zip;base64," se presente
@@ -56,35 +55,37 @@ export function InvoiceNamer() {
 }
 
 
-  const handleFileChange = async(event)=>{
-    const pdfFile = event.target.files[0];
-    if (pdfFile) {
-      setPdfSelected(true); 
-      const formData = new FormData(); 
-      formData.append('pdfFile', pdfFile);
-      setLoading(true);
-      try {
-        const response = await fetch(baseURL+'/splitPdf', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error('Erro ao enviar o arquivo');
-        }
-  
-        const data = await response.json();
-        console.log('Dados recebidos:', data); 
-        setZip(data.zipBase64);
+const handleFileChange = async (event) => {
+  const pdfFile = event.target.files[0];
+  if (pdfFile) {
+    setPdfSelected(true);
+    const formData = new FormData();
+    formData.append('pdfFile', pdfFile);
+    setLoading(true);
+    try {
+      const response = await fetch(baseURL + '/splitInvoicePdf', {
+        method: 'POST',
+        body: formData,
+      });
 
-        console.log('Arquivo enviado com sucesso:', data);
-      } catch (error) {
-        console.error('Erro ao enviar o arquivo:', error);
-      } finally {
-        setLoading(false); // Desativa o loading após a requisição
+      if (!response.ok) {
+        throw new Error('Erro ao enviar o arquivo');
       }
+
+      const data = await response.json();
+      if (data.zipBase64) {
+        setZip(data.zipBase64);
+        console.log('Arquivo enviado com sucesso:', data);
+      } else {
+        throw new Error('Erro ao processar o arquivo');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar o arquivo:', error);
+    } finally {
+      setLoading(false);
     }
   }
+};
 
   const handleDrop = (event) => {
     event.preventDefault(); 
@@ -132,7 +133,8 @@ export function InvoiceNamer() {
         <h1>Nomear Notas fiscais</h1>
         <p className='description'>Divida seu arquivo PDF de notas fiscais em uma pasta zip com arquivos individuais nomeados com suas informações.</p>
         <UploadBtn handleFileChange={handleFileChange} backgroundColor='#2d3fe5'></UploadBtn>
-        <p>Modelos nomeados: . . . . . . . . . . . . . . . . </p>
+        <p>Modelo válido: Nota Fiscal Prefeitura da cidade do Rio de Janeiro </p>
+
       </section>
 
        ) : (
@@ -158,5 +160,3 @@ export function InvoiceNamer() {
     </>
   )
 }
-
- 

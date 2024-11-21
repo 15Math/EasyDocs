@@ -1,24 +1,32 @@
 import pdf from "pdf-parse/lib/pdf-parse.js"
-
+import fs from 'fs';
 import {fromBuffer} from "pdf2pic"
-const getPdfWithText = (pdfBuffer) =>{
+import Tesseract from "tesseract.js";
+const getPdfText = async (pdfBuffer) => {
 
     const options = {
-        density: 100,
+        density: 300,
         saveFilename: "pdfImage",
         format: "png",
-        width: 600,
-        height: 600
-    }
-    const convert = fromBuffer(pdfBuffer, options);
+        height:"1500",
+        width:"1500"
+    };
 
-    convert(1,{responseType:"image"})
-    .then((resolve) => {
-        console.log("Page is now converted as image");
-    
-        return resolve;
-      });
-}
+    try {
+        // Criação do convert a partir do buffer e opções
+        const convert = fromBuffer(pdfBuffer, options);
+        const imageInfo = await convert(1); 
+        const imageBuffer = fs.readFileSync(imageInfo.path);
+        
+        const { data: { text } } = await Tesseract.recognize(
+            imageBuffer, 
+            'por',  
+        );
+        return text;
+    } catch (error) {
+        console.error("Erro durante a conversão do PDF ou OCR:", error); // Logando erro caso aconteça
+    }
+};
 
 
 const createGenericName = ()=>{
@@ -49,17 +57,6 @@ const setReceiptName = async (pdfBuffer) => {
     try{
 
         switch (cleanFirstLine) {
-            case "PREFEITURADACIDADEDORIODEJANEIRO":
-                
-                paymAmount = pdfText.match(/VALOR DA NOTA= \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
-                
-
-                receiverName = pdfText.match(/Nome\/Razão Social\s*([^\n\S][^\n]*)/i)?.[1];
-               
-                
-                matchDate = pdfText.match(/Data e Hora de Emissão\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
-
-            break;
             case "ComprovantedeTransferência":
 
                 matchDate = pdfText.match(/data da transferência:\s*(\d{2}\/\d{2}\/\d{4})/i)?.[1];
@@ -161,7 +158,7 @@ const setReceiptName = async (pdfBuffer) => {
         //Formatando a data
         const [day, month, year] = matchDate.split('/');
         paymDate = [year, month, day].join('.'); 
-        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()}`
+        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()} - Comprovante`
         return pdfName;
     }catch (erro) {
         console.log("ERRO: erro ao nomear PDF", erro);
@@ -171,12 +168,26 @@ const setReceiptName = async (pdfBuffer) => {
 
 
 
-const setInvoiceName = async  ()=>{
+const setInvoiceName = async  (pdfText)=>{
+        
+    const paymAmount = pdfText.match(/VALOR DA NOTA = \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+    console.log(paymAmount)
 
+    const receiverName = pdfText.match(/Nome\/Razão Social:\s*([^\n]+)/i)?.[1];
+    console.log(receiverName )      
+                
+    let matchDate = pdfText.match(/(\d{2}\/\d{2}\/\d{4})/i)?.[1];
+
+    const [day, month, year] = matchDate.split('/');
+    const paymDate = [year, month, day].join('.'); 
+    console.log(paymDate)
+
+    const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()} - Nota Fiscal`
+    return pdfName;
 }
 
 export default {
     setReceiptName,
     setInvoiceName,
-    getPdfWithText
+    getPdfText
 }
