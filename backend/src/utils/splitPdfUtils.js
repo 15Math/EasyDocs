@@ -76,14 +76,13 @@ const setReceiptName = async (pdfBuffer) => {
 
             break;
             case "Comprovantedepagamentodeboleto":
-
+                
                 matchDate = pdfText.match(/(\d{2}\/\d{2}\/\d{4})\s*Autenticação\s+mecânica/i)?.[1];
             
                 receiverName = pdfText.match(/Beneficiário:\s*([\w\s\-.]+)(?=\s+CPF\/CNPJ)/i)?.[1];
     
                 if(!pdfText.includes("Beneficiário Final:")){
-                    paymAmount = pdfText.match(/(?<!\d)(?<![A-Za-z/])(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[1];
-
+                    paymAmount = pdfText.match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})\D*(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Data de pagamento:)/i)?.[2];
                 }else{
                     paymAmount = data.text.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?=\s*Beneficiário Final:)/i)?.[1];
                 }
