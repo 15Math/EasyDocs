@@ -60,7 +60,6 @@ export function ReceiptNamer() {
       setLoading(true);
       try {
         const response = await fetch(baseURL+'/splitReceiptPdf', {
-        const response = await fetch(baseURL+'/splitReceiptPdf', {
           method: 'POST',
           body: formData,
         });
