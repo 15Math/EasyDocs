@@ -158,7 +158,10 @@ const setReceiptName = async (pdfBuffer) => {
         //Formatando a data
         const [day, month, year] = matchDate.split('/');
         paymDate = [year, month, day].join('.'); 
-        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()} - Comprovante`
+
+        const timestamp = Date.now(); 
+
+        const pdfName = `${paymDate} - ${paymAmount} - ${receiverName.trim()} - Comprovante`+ timestamp
         return pdfName;
     }catch (erro) {
         console.log("ERRO: erro ao nomear PDF", erro);
