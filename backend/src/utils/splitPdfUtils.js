@@ -1,32 +1,32 @@
 import pdf from "pdf-parse/lib/pdf-parse.js"
-import fs from 'fs';
-import {fromBuffer} from "pdf2pic"
-import Tesseract from "tesseract.js";
-const getPdfText = async (pdfBuffer) => {
+//import fs from 'fs';
+//import {fromBuffer} from "pdf2pic"
+//import Tesseract from "tesseract.js";
+// const getPdfText = async (pdfBuffer) => {
 
-    const options = {
-        density: 300,
-        saveFilename: "pdfImage",
-        format: "png",
-        height:"1500",
-        width:"1500"
-    };
+//     const options = {
+//         density: 300,
+//         saveFilename: "pdfImage",
+//         format: "png",
+//         height:"1500",
+//         width:"1500"
+//     };
 
-    try {
-        // Criação do convert a partir do buffer e opções
-        const convert = fromBuffer(pdfBuffer, options);
-        const imageInfo = await convert(1); 
-        const imageBuffer = fs.readFileSync(imageInfo.path);
+//     try {
+//         // Criação do convert a partir do buffer e opções
+//         const convert = fromBuffer(pdfBuffer, options);
+//         const imageInfo = await convert(1); 
+//         const imageBuffer = fs.readFileSync(imageInfo.path);
         
-        const { data: { text } } = await Tesseract.recognize(
-            imageBuffer, 
-            'por',  
-        );
-        return text;
-    } catch (error) {
-        console.error("Erro durante a conversão do PDF ou OCR:", error); // Logando erro caso aconteça
-    }
-};
+//         const { data: { text } } = await Tesseract.recognize(
+//             imageBuffer, 
+//             'por',  
+//         );
+//         return text;
+//     } catch (error) {
+//         console.error("Erro durante a conversão do PDF ou OCR:", error); // Logando erro caso aconteça
+//     }
+//};
 
 
 const createGenericName = ()=>{
@@ -168,9 +168,12 @@ const setReceiptName = async (pdfBuffer) => {
 
 
 
-const setInvoiceName = async  (pdfText)=>{
+const setInvoiceName = async  (pdfBuffer)=>{
+    const data = await pdf(pdfBuffer);
+    const pdfText = data.text;
+    console.log(pdfText)
         
-    const paymAmount = pdfText.match(/VALOR DA NOTA = \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+    const paymAmount = pdfText.match(/VALOR DA  NOTA = \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
     console.log(paymAmount)
 
     const receiverName = pdfText.match(/Nome\/Razão Social:\s*([^\n]+)/i)?.[1];
@@ -189,5 +192,5 @@ const setInvoiceName = async  (pdfText)=>{
 export default {
     setReceiptName,
     setInvoiceName,
-    getPdfText
+    //getPdfText
 }

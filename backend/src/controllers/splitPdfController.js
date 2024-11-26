@@ -47,8 +47,9 @@ const splitPdf = async (req, res) => {
                 newFileName = await setReceiptName(pdfBytes); 
             }else if(endpoint == "/splitInvoicePdf"){
                 //Transformar em pdf com arquivo de texto
-                const text = await getPdfText(buffer);
-                newFileName = await setInvoiceName(text); 
+                //const text = await getPdfText(buffer);
+
+                newFileName = await setInvoiceName(pdfBytes); 
             }
 
             archive.append(buffer, { name: `${newFileName}.pdf` });
