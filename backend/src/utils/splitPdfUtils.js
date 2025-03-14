@@ -173,7 +173,7 @@ const setInvoiceName = async  (pdfBuffer)=>{
     const pdfText = data.text;
     console.log(pdfText)
         
-    const paymAmount = pdfText.match(/VALOR DA  NOTA = \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
+    const paymAmount = pdfText.match(/VALOR DA NOTA = \s*R\$\s*([\d.]+,\d{2})/i)?.[1];
     console.log(paymAmount)
 
     const receiverName = pdfText.match(/Nome\/Razão Social:\s*([^\n]+)/i)?.[1];
