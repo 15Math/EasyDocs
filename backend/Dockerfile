@@ -1,8 +1,8 @@
-# Use uma imagem base com Node.js >= 14
-FROM node:14
+# Usa a versão Bullseye do Debian, que ainda possui repositórios ativos
+FROM node:14-bullseye
 
 # Atualiza a lista de pacotes e instala GraphicsMagick e Ghostscript
-RUN apt-get update --allow-releaseinfo-change && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends graphicsmagick ghostscript && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
